@@ -63,7 +63,6 @@
             <tr>
               <th>No SPPB</th>
               <th>Nama</th>
-              <th>Uraian</th>
               <th>Nominal</th>
               <th>Tgl Terima</th>
               <th>Tgl Rencana Bayar</th>
@@ -111,7 +110,7 @@
             let belumBayar = data.filter((d) => d.status !== "Sudah Bayar");
 
             if (belumBayar.length === 0) {
-              tableBody.innerHTML = `<tr><td colspan="9" class="empty-data">Belum ada data dokumen</td></tr>`;
+              tableBody.innerHTML = `<tr><td colspan="8" class="empty-data">Belum ada data dokumen</td></tr>`;
               return;
             }
 
@@ -121,7 +120,6 @@
           <tr>
             <td>${d.no_sppb}</td>
             <td>${d.nama}</td>
-            <td>${d.uraian || "-"}</td>
             <td>${Number(d.nominal).toLocaleString("id-ID")}</td>
             <td>${d.tanggal_terima}</td>
             <td>${d.tanggal_rencana}</td>

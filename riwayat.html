@@ -76,7 +76,6 @@
             <tr>
               <th>No SPPB</th>
               <th>Nama</th>
-              <th>Uraian</th>
               <th>Nominal</th>
               <th>Tanggal Bayar</th>
               <th>Bukti</th>
@@ -131,7 +130,6 @@
     <tr>
       <td>${d.no_sppb}</td>
       <td>${d.nama}</td>
-      <td>${d.uraian || "-"}</td>
       <td>${Number(d.nominal).toLocaleString("id-ID")}</td>
       <td>${d.tanggal_realisasi || "-"}</td>
       <td>${d.bukti ? `<a href="${d.bukti}" target="_blank">Lihat</a>` : "-"}</td>
