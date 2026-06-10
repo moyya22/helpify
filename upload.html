@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Upload Excel</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <div class="header">
+      <h1>HELPIFY</h1>
+      <div class="user-info" onclick="toggleDropdown()">
+        <div class="user-avatar"><i class="fas fa-user"></i></div>
+        <span id="usernameDisplay"></span>
+        <i class="fa-solid fa-chevron-down"></i>
+        <div class="dropdown-menu" id="dropdownMenu">
+          <div onclick="logout()">Logout</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-title">Menu Utama</div>
+      <ul>
+        <li>
+          <a href="index.html"
+            ><i class="fa-solid fa-chart-line"></i> Dashboard</a
+          >
+        </li>
+        <li>
+          <a href="input.html"
+            ><i class="fa-solid fa-file-circle-plus"></i> Input Dokumen</a
+          >
+        </li>
+        <li>
+          <a href="data.html"
+            ><i class="fa-solid fa-database"></i> Data Dokumen</a
+          >
+        </li>
+        <li>
+          <a href="riwayat.html"
+            ><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pembayaran</a
+          >
+        </li>
+        <li>
+          <a href="upload.html" class="active"
+            ><i class="fa-solid fa-file-arrow-up"></i> Upload Excel</a
+          >
+        </li>
+        <li>
+          <a href="#" onclick="logout()"
+            ><i class="fa-solid fa-right-from-bracket"></i> Logout</a
+          >
+        </li>
+      </ul>
+    </div>
+
+    <div class="main">
+      <div class="navbar">Upload Data Excel</div>
+
+      <div class="form-container" style="max-width: 600px">
+        <p style="margin-bottom: 16px; color: #555; font-size: 14px">
+          Upload file <strong>data_bersih_gabungan.xlsx</strong> atau file Excel
+          lainnya dengan format kolom: <br />No SPPb, Nama Vendor, Jumlah
+          Hutang, Tgl Rencana Bayar, Tgl Realisasi Bayar, dst.
+        </p>
+
+        <div
+          id="dropZone"
+          style="
+            border: 2px dashed #d3d3d3;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 16px;
+          "
+          onclick="document.getElementById('fileInput').click()"
+        >
+          <i
+            class="fa-solid fa-file-excel"
+            style="font-size: 40px; color: #0f2573; margin-bottom: 10px"
+          ></i>
+          <p id="dropText">Klik untuk pilih file Excel (.xlsx)</p>
+        </div>
+
+        <input
+          type="file"
+          id="fileInput"
+          accept=".xlsx"
+          style="display: none"
+          onchange="previewFile()"
+        />
+
+        <button class="btn" id="uploadBtn" onclick="uploadFile()" disabled>
+          <i class="fa-solid fa-upload"></i> Upload & Import
+        </button>
+
+        <div
+          id="result"
+          style="
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+          "
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      let loginUser = localStorage.getItem("loginUser");
+      if (!loginUser) window.location.href = "login.html";
+      document.getElementById("usernameDisplay").innerText = loginUser;
+
+      function toggleDropdown() {
+        document.getElementById("dropdownMenu").classList.toggle("show");
+      }
+
+      window.onclick = function (e) {
+        if (!e.target.closest(".user-info")) {
+          document.getElementById("dropdownMenu").classList.remove("show");
+        }
+      };
+
+      function logout() {
+        localStorage.removeItem("loginUser");
+        window.location.href = "login.html";
+      }
+
+      function previewFile() {
+        let file = document.getElementById("fileInput").files[0];
+        if (file) {
+          document.getElementById("dropText").innerText =
+            "File dipilih: " + file.name;
+          document.getElementById("uploadBtn").disabled = false;
+        }
+      }
+
+      function uploadFile() {
+        let file = document.getElementById("fileInput").files[0];
+        if (!file) return;
+
+        let formData = new FormData();
+        formData.append("file", file);
+
+        let btn = document.getElementById("uploadBtn");
+        btn.disabled = true;
+        btn.innerHTML =
+          '<i class="fa-solid fa-spinner fa-spin"></i> Mengupload...';
+
+        fetch("/api/upload-excel", {
+          method: "POST",
+          body: formData,
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            let result = document.getElementById("result");
+            result.style.display = "block";
+            if (data.success) {
+              result.style.background = "#d4edda";
+              result.style.color = "#155724";
+              result.innerHTML = `<i class="fa-solid fa-check-circle"></i> ${data.message}`;
+            } else {
+              result.style.background = "#f8d7da";
+              result.style.color = "#721c24";
+              result.innerHTML = `<i class="fa-solid fa-times-circle"></i> ${data.message}`;
+            }
+            btn.disabled = false;
+            btn.innerHTML =
+              '<i class="fa-solid fa-upload"></i> Upload & Import';
+          })
+          .catch((err) => {
+            alert("Gagal upload: " + err.message);
+            btn.disabled = false;
+            btn.innerHTML =
+              '<i class="fa-solid fa-upload"></i> Upload & Import';
+          });
+      }
+    </script>
+  </body>
+</html>
