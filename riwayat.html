@@ -95,11 +95,7 @@
     </div>
     <script>
       let loginUser = localStorage.getItem("loginUser");
-
-      if (!loginUser) {
-        window.location.href = "login.html";
-      }
-
+      if (!loginUser) window.location.href = "login.html";
       document.getElementById("usernameDisplay").innerText = loginUser;
 
       function toggleDropdown() {
@@ -117,62 +113,32 @@
         window.location.href = "login.html";
       }
 
-      function openChangePassword() {
-        document.getElementById("passwordModal").style.display = "flex";
-      }
-
-      function closeModal() {
-        document.getElementById("passwordModal").style.display = "none";
-      }
-
-      function changePassword() {
-        let oldPass = document.getElementById("oldPass").value;
-        let newPass = document.getElementById("newPass").value;
-
-        let savedPass = localStorage.getItem("loginPass") || "admin";
-
-        if (oldPass === savedPass) {
-          localStorage.setItem("loginPass", newPass);
-          alert("Password berhasil diubah!");
-          closeModal();
-        } else {
-          alert("Password lama salah!");
-        }
-      }
-    </script>
-    <script>
       document.addEventListener("DOMContentLoaded", function () {
-        let data = JSON.parse(localStorage.getItem("dokumen")) || [];
+        fetch("/api/pembayaran")
+          .then((res) => res.json())
+          .then((data) => {
+            let riwayat = data.filter((d) => d.status === "Sudah Bayar");
+            let tableBody = document.getElementById("riwayatTable");
 
-        // 🔥 FILTER HANYA YANG SUDAH BAYAR
-        let riwayat = data.filter((d) => d.status === "Sudah Bayar");
+            if (riwayat.length === 0) {
+              tableBody.innerHTML = `<tr><td colspan="6">Belum ada riwayat pembayaran</td></tr>`;
+              return;
+            }
 
-        let tableBody = document.getElementById("riwayatTable");
-
-        if (riwayat.length === 0) {
-          tableBody.innerHTML = `
-      <tr>
-        <td colspan="6">Belum ada riwayat pembayaran</td>
-      </tr>`;
-          return;
-        }
-
-        tableBody.innerHTML = "";
-
-        riwayat.forEach((d) => {
-          tableBody.innerHTML += `
-      <tr>
-        <td>${d.spp}</td>
-        <td>${d.nama}</td>
-        <td>${d.jenis}</td>
-        <td>${d.nominal}</td>
-        <td>${new Date().toLocaleDateString()}</td>
-        <td>
-          ${d.bukti ? `<a href="${d.bukti}" target="_blank">Lihat</a>` : "-"}
-        </td>
-      </tr>
-    `;
-        });
+            tableBody.innerHTML = "";
+            riwayat.forEach((d) => {
+              tableBody.innerHTML += `
+            <tr>
+              <td>${d.no_sppb}</td>
+              <td>${d.nama}</td>
+              <td>${d.jenis_dokumen}</td>
+              <td>${d.nominal}</td>
+              <td>${d.tanggal_realisasi || "-"}</td>
+              <td>${d.bukti ? `<a href="${d.bukti}" target="_blank">Lihat</a>` : "-"}</td>
+            </tr>
+          `;
+            });
+          });
       });
     </script>
   </body>

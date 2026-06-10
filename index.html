@@ -140,133 +140,109 @@
                 Belum ada data dokumen. Silakan input dokumen terlebih dahulu.
               </td>
             </tr>
-          </tbody>
-        </table>
+          </tbody><script>
+  let loginUser = localStorage.getItem("loginUser");
+  if (!loginUser) window.location.href = "login.html";
+  document.getElementById("usernameDisplay").innerText = loginUser;
 
-        <a href="input.html"><button class="btn">Input Dokumen</button></a>
-      </div>
-    </div>
+  function toggleDropdown() {
+    document.getElementById("dropdownMenu").classList.toggle("show");
+  }
 
-    <div class="modal" id="passwordModal">
-      <div class="modal-content">
-        <h3>Ubah Password</h3>
-        <input id="oldPass" type="password" placeholder="Password Lama" />
-        <input id="newPass" type="password" placeholder="Password Baru" />
-        <button class="btn" onclick="changePassword()">Simpan</button>
-        <button class="btn" style="background: gray" onclick="closeModal()">
-          Batal
-        </button>
-      </div>
-    </div>
+  window.onclick = function (e) {
+    if (!e.target.closest(".user-info")) {
+      document.getElementById("dropdownMenu").classList.remove("show");
+    }
+  };
 
-    <script>
-      let loginUser = localStorage.getItem("loginUser");
-      if (!loginUser) window.location.href = "login.html";
+  function logout() {
+    localStorage.removeItem("loginUser");
+    window.location.href = "login.html";
+  }
 
-      document.getElementById("usernameDisplay").innerText = loginUser;
+  function openChangePassword() {
+    document.getElementById("passwordModal").style.display = "flex";
+  }
 
-      function toggleDropdown() {
-        document.getElementById("dropdownMenu").classList.toggle("show");
-      }
+  function closeModal() {
+    document.getElementById("passwordModal").style.display = "none";
+  }
 
-      window.onclick = function (e) {
-        if (!e.target.closest(".user-info")) {
-          document.getElementById("dropdownMenu").classList.remove("show");
-        }
-      };
+  function changePassword() {
+    let oldPass = document.getElementById("oldPass").value;
+    let newPass = document.getElementById("newPass").value;
+    let savedPass = localStorage.getItem("loginPass") || "admin";
+    if (oldPass === savedPass) {
+      localStorage.setItem("loginPass", newPass);
+      alert("Password berhasil diubah!");
+      closeModal();
+    } else {
+      alert("Password lama salah!");
+    }
+  }
 
-      function logout() {
-        localStorage.removeItem("loginUser");
-        window.location.href = "login.html";
-      }
-
-      function openChangePassword() {
-        document.getElementById("passwordModal").style.display = "flex";
-      }
-
-      function closeModal() {
-        document.getElementById("passwordModal").style.display = "none";
-      }
-
-      function changePassword() {
-        let oldPass = document.getElementById("oldPass").value;
-        let newPass = document.getElementById("newPass").value;
-        let savedPass = localStorage.getItem("loginPass") || "admin";
-        if (oldPass === savedPass) {
-          localStorage.setItem("loginPass", newPass);
-          alert("Password berhasil diubah!");
-          closeModal();
-        } else {
-          alert("Password lama salah!");
-        }
-      }
-
-      document.addEventListener("DOMContentLoaded", function () {
-        let data = JSON.parse(localStorage.getItem("dokumen")) || [];
-
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("/api/pembayaran")
+      .then(res => res.json())
+      .then(data => {
         let today = new Date().toISOString().split("T")[0];
 
-        // Total semua dokumen
+        // Cards
         document.getElementById("totalDokumen").innerText = data.length;
 
-        // Rencana bayar hari ini (belum bayar)
-        let todayCount = data.filter(
-          (d) => d.rencana === today && d.status !== "Sudah Bayar",
-        ).length;
+        let todayCount = data.filter(d => d.tanggal_rencana === today && d.status !== "Sudah Bayar").length;
         document.getElementById("rencanaBayar").innerText = todayCount;
 
-        // Melewati tanggal rencana (belum bayar & tanggal rencana < hari ini)
-        let terlambat = data.filter(
-          (d) => d.rencana < today && d.status !== "Sudah Bayar",
-        ).length;
+        let terlambat = data.filter(d => d.tanggal_rencana < today && d.status !== "Sudah Bayar").length;
         document.getElementById("terlambat").innerText = terlambat;
 
+        // Simpan ke window untuk filter
+        window.allData = data;
         renderDashboardTable(data);
-      });
+      })
+      .catch(err => console.error("Gagal fetch data:", err));
+  });
 
-      function renderDashboardTable(data) {
-        let tableBody = document.getElementById("dashboardTable");
-        let filtered = data.filter((d) => d.status !== "Sudah Bayar");
+  function renderDashboardTable(data) {
+    let tableBody = document.getElementById("dashboardTable");
+    let filtered = data.filter(d => d.status !== "Sudah Bayar");
 
-        if (filtered.length === 0) {
-          tableBody.innerHTML = `<tr><td colspan="11" class="empty-data">Tidak ada data yang cocok</td></tr>`;
-          return;
-        }
-        tableBody.innerHTML = "";
-        filtered.forEach((d, index) => {
-          tableBody.innerHTML += `
-            <tr>
-              <td>${index + 1}</td>
-              <td>${d.spp}</td>
-              <td>${d.nama}</td>
-              <td>${d.jenis}</td>
-              <td>${d.nominal}</td>
-              <td>${d.tanggal}</td>
-              <td>${d.rencana}</td>
-              <td>${d.cc}</td>
-              <td>${d.ref}</td>
-              <td>-</td>
-              <td>${d.status}</td>
-            </tr>
-          `;
-        });
-      }
+    if (filtered.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="11" class="empty-data">Tidak ada data</td></tr>`;
+      return;
+    }
 
-      function filterTable() {
-        let keyword = document
-          .getElementById("searchInput")
-          .value.toLowerCase()
-          .trim();
-        let allData = JSON.parse(localStorage.getItem("dokumen")) || [];
-        let filtered = allData.filter(
-          (d) =>
-            d.status !== "Sudah Bayar" &&
-            (d.spp.toLowerCase().includes(keyword) ||
-              d.nama.toLowerCase().includes(keyword) ||
-              d.jenis.toLowerCase().includes(keyword)),
-        );
-        renderDashboardTable(filtered);
-      }
-    </script>
+    tableBody.innerHTML = "";
+    filtered.forEach((d, index) => {
+      tableBody.innerHTML += `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${d.no_sppb}</td>
+          <td>${d.nama}</td>
+          <td>${d.jenis_dokumen}</td>
+          <td>${d.nominal}</td>
+          <td>${d.tanggal_terima}</td>
+          <td>${d.tanggal_rencana}</td>
+          <td>${d.kode_cc}</td>
+          <td>${d.kode_ref || "-"}</td>
+          <td>-</td>
+          <td>${d.status}</td>
+        </tr>
+      `;
+    });
+  }
+
+  function filterTable() {
+    let keyword = document.getElementById("searchInput").value.toLowerCase().trim();
+    let filtered = (window.allData || []).filter(d =>
+      d.status !== "Sudah Bayar" && (
+        (d.no_sppb || "").toLowerCase().includes(keyword) ||
+        (d.nama || "").toLowerCase().includes(keyword) ||
+        (d.jenis_dokumen || "").toLowerCase().includes(keyword)
+      )
+    );
+    renderDashboardTable(filtered);
+  }
+</script>
   </body>
 </html>

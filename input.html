@@ -3,9 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Input Dokumen</title>
-
     <link rel="stylesheet" href="css/style.css" />
-
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -15,15 +13,10 @@
   <body>
     <div class="header">
       <h1>HELPIFY</h1>
-
       <div class="user-info" onclick="toggleDropdown()">
-        <div class="user-avatar">
-          <i class="fas fa-user"></i>
-        </div>
-
+        <div class="user-avatar"><i class="fas fa-user"></i></div>
         <span id="usernameDisplay"></span>
         <i class="fa-solid fa-chevron-down"></i>
-
         <div class="dropdown-menu" id="dropdownMenu">
           <div onclick="openChangePassword()">Ubah Password</div>
           <div onclick="logout()">Logout</div>
@@ -33,7 +26,6 @@
 
     <div class="sidebar">
       <div class="sidebar-title">Menu Utama</div>
-
       <ul>
         <li>
           <a href="index.html"
@@ -56,6 +48,11 @@
           >
         </li>
         <li>
+          <a href="upload.html"
+            ><i class="fa-solid fa-file-arrow-up"></i>Upload Excel</a
+          >
+        </li>
+        <li>
           <a href="#" onclick="logout()"
             ><i class="fa-solid fa-right-from-bracket"></i>Logout</a
           >
@@ -75,15 +72,10 @@
           <input id="spp" type="text" placeholder="Masukkan No SPPb" required />
 
           <label>Kode CC</label>
-          <input id="cc" type="number" placeholder="Masukkan No CC" required />
+          <input id="cc" type="text" placeholder="Masukkan No CC" required />
 
           <label>Kode Ref</label>
-          <input
-            id="ref"
-            type="number"
-            placeholder="Masukkan Kode Ref"
-            required
-          />
+          <input id="ref" type="text" placeholder="Masukkan Kode Ref" />
 
           <label>Nama Vendor/Karyawan</label>
           <input
@@ -113,6 +105,7 @@
 
           <label>Tanggal Rencana Bayar</label>
           <input id="rencana" type="date" required />
+
           <button type="submit" class="btn">Simpan</button>
         </form>
       </div>
@@ -120,10 +113,7 @@
 
     <script>
       let loginUser = localStorage.getItem("loginUser");
-
-      if (!loginUser) {
-        window.location.href = "login.html";
-      }
+      if (!loginUser) window.location.href = "login.html";
 
       document.getElementById("usernameDisplay").innerText = loginUser;
 
@@ -153,9 +143,7 @@
       function changePassword() {
         let oldPass = document.getElementById("oldPass").value;
         let newPass = document.getElementById("newPass").value;
-
         let savedPass = localStorage.getItem("loginPass") || "admin";
-
         if (oldPass === savedPass) {
           localStorage.setItem("loginPass", newPass);
           alert("Password berhasil diubah!");
@@ -168,30 +156,32 @@
       function saveData(e) {
         e.preventDefault();
 
-        let inputs = document.querySelectorAll("input");
-        let select = document.querySelector("select");
-
         let data = {
-          tanggal: inputs[0].value, // tanggal terima
-          spp: inputs[1].value,
-          cc: inputs[2].value,
-          ref: inputs[3].value,
-          nama: inputs[4].value,
-          jenis: select.value,
-          nominal: inputs[5].value,
-          rencana: inputs[6].value, // tanggal rencana
-          status: "Belum Bayar",
-          bukti: "",
-          realisasi: "", // 🔥 tambahan penting
+          tanggal: document.getElementById("tanggal").value,
+          spp: document.getElementById("spp").value,
+          cc: document.getElementById("cc").value,
+          ref: document.getElementById("ref").value,
+          nama: document.getElementById("nama").value,
+          jenis: document.getElementById("jenis").value,
+          nominal: document.getElementById("nominal").value,
+          rencana: document.getElementById("rencana").value,
         };
 
-        let allData = JSON.parse(localStorage.getItem("dokumen")) || [];
-        allData.push(data);
-
-        localStorage.setItem("dokumen", JSON.stringify(allData));
-
-        alert("Data berhasil disimpan!");
-        window.location.href = "data.html";
+        fetch("/api/pembayaran", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        })
+          .then((res) => res.json())
+          .then((result) => {
+            if (result.success) {
+              alert("Data berhasil disimpan!");
+              window.location.href = "data.html";
+            } else {
+              alert("Gagal menyimpan: " + result.message);
+            }
+          })
+          .catch((err) => alert("Error: " + err.message));
       }
     </script>
   </body>
