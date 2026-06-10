@@ -55,8 +55,6 @@ db.connect((err) => {
   });
 });
 
-// GET semua pembayaran
-// Fungsi hitung skor SAW
 function hitungSAW(data) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -70,7 +68,7 @@ function hitungSAW(data) {
   };
 
   return data.map((d) => {
-    // C1 — Kedekatan Tenggat (tanggal_rencana ke hari ini)
+    // C1 — Kedekatan Tenggat
     let c1 = 1;
     if (d.tanggal_rencana) {
       const rencana = new Date(d.tanggal_rencana);
@@ -103,7 +101,7 @@ function hitungSAW(data) {
     else if (jenis === "Pembayaran Mingguan") c3 = 4;
     else if (jenis === "Pembayaran Vendor Non Urgent") c3 = 2;
 
-    // C4 — Umur Tunggu (tanggal_terima ke hari ini)
+    // C4 — Umur Tunggu
     let c4 = 1;
     if (d.tanggal_terima) {
       const terima = new Date(d.tanggal_terima);
@@ -125,7 +123,6 @@ function hitungSAW(data) {
     else if (nominal <= 500000000) c5 = 4;
     else c5 = 5;
 
-    // Normalisasi SAW (benefit semua, bagi nilai max = 5)
     const r1 = c1 / 5;
     const r2 = c2 / 5;
     const r3 = c3 / 5;
@@ -138,7 +135,6 @@ function hitungSAW(data) {
   });
 }
 
-// GET semua pembayaran
 app.get("/api/pembayaran", (req, res) => {
   db.query("SELECT * FROM pembayaran ORDER BY id DESC", (err, results) => {
     if (err)
@@ -147,15 +143,15 @@ app.get("/api/pembayaran", (req, res) => {
     const belumBayar = results.filter((d) => d.status !== "Sudah Bayar");
     const sudahBayar = results.filter((d) => d.status === "Sudah Bayar");
 
-    const denganSAW = hitungSAW(belumBayar).sort(
-      (a, b) => b.saw_score - a.saw_score,
-    );
+    const denganSAW = hitungSAW(belumBayar).sort((a, b) => {
+      if (b.saw_score !== a.saw_score) return b.saw_score - a.saw_score;
+      return new Date(a.tanggal_terima) - new Date(b.tanggal_terima);
+    });
 
     return res.json([...denganSAW, ...sudahBayar]);
   });
 });
 
-// POST input manual
 app.post("/api/pembayaran", (req, res) => {
   const { tanggal, spp, cc, nama, uraian, jenis, nominal, rencana } = req.body;
 
@@ -181,7 +177,6 @@ app.post("/api/pembayaran", (req, res) => {
   );
 });
 
-// POST upload Excel
 app.post("/api/upload-excel", upload.single("file"), (req, res) => {
   if (!req.file)
     return res
@@ -192,8 +187,6 @@ app.post("/api/upload-excel", upload.single("file"), (req, res) => {
     const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet);
-
-    console.log("SAMPLE ROW:", JSON.stringify(rows[0]));
 
     let berhasil = 0,
       duplikat = 0,
@@ -297,7 +290,6 @@ app.post("/api/upload-excel", upload.single("file"), (req, res) => {
   }
 });
 
-// PATCH update status
 app.patch("/api/pembayaran/:id", (req, res) => {
   const { status, tanggal_realisasi, bukti } = req.body;
   db.query(
