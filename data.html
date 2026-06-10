@@ -58,6 +58,37 @@
     <div class="main">
       <div class="navbar">Data Dokumen Pembayaran</div>
       <div class="table-container">
+        <div
+          style="display: flex; justify-content: flex-end; margin-bottom: 10px"
+        >
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              background: #f1f3f6;
+              border: 1px solid #d3d3d3;
+              border-radius: 6px;
+              padding: 6px 12px;
+            "
+          >
+            <i class="fa-solid fa-magnifying-glass" style="color: #0f2573"></i>
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Cari No SPPB atau Nama..."
+              oninput="filterTable()"
+              style="
+                border: none;
+                background: transparent;
+                outline: none;
+                font-size: 14px;
+                width: 220px;
+                color: #333;
+              "
+            />
+          </div>
+        </div>
         <table>
           <thead>
             <tr>
@@ -73,7 +104,7 @@
           </thead>
           <tbody>
             <tr>
-              <td colspan="6" class="empty-data">Belum ada data dokumen</td>
+              <td colspan="8" class="empty-data">Belum ada data dokumen</td>
             </tr>
           </tbody>
         </table>
@@ -106,35 +137,52 @@
         fetch("/api/pembayaran")
           .then((res) => res.json())
           .then((data) => {
-            let tableBody = document.querySelector("tbody");
-            let belumBayar = data.filter((d) => d.status !== "Sudah Bayar");
-
-            if (belumBayar.length === 0) {
-              tableBody.innerHTML = `<tr><td colspan="8" class="empty-data">Belum ada data dokumen</td></tr>`;
-              return;
-            }
-
-            tableBody.innerHTML = "";
-            belumBayar.forEach((d) => {
-              tableBody.innerHTML += `
-          <tr>
-            <td>${d.no_sppb}</td>
-            <td>${d.nama}</td>
-            <td>${Number(d.nominal).toLocaleString("id-ID")}</td>
-            <td>${d.tanggal_terima}</td>
-            <td>${d.tanggal_rencana}</td>
-            <td>${d.kode_cc}</td>
-            <td>
-              <select onchange="ubahStatus(${d.id}, this.value)">
-                <option value="Belum Bayar" selected>Belum Bayar</option>
-                <option value="Sudah Bayar">Sudah Bayar</option>
-              </select>
-            </td>
-            <td>-</td>
-          </tr>
-        `;
-            });
+            window.allData = data.filter((d) => d.status !== "Sudah Bayar");
+            tampilkanTable(window.allData);
           });
+      }
+
+      function filterTable() {
+        let keyword = document
+          .getElementById("searchInput")
+          .value.toLowerCase()
+          .trim();
+        let filtered = (window.allData || []).filter(
+          (d) =>
+            (d.no_sppb || "").toLowerCase().includes(keyword) ||
+            (d.nama || "").toLowerCase().includes(keyword),
+        );
+        tampilkanTable(filtered);
+      }
+
+      function tampilkanTable(data) {
+        let tableBody = document.querySelector("tbody");
+
+        if (data.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="8" class="empty-data">Belum ada data dokumen</td></tr>`;
+          return;
+        }
+
+        tableBody.innerHTML = "";
+        data.forEach((d) => {
+          tableBody.innerHTML += `
+            <tr>
+              <td>${d.no_sppb}</td>
+              <td>${d.nama}</td>
+              <td>${Number(d.nominal).toLocaleString("id-ID")}</td>
+              <td>${d.tanggal_terima}</td>
+              <td>${d.tanggal_rencana}</td>
+              <td>${d.kode_cc}</td>
+              <td>
+                <select onchange="ubahStatus(${d.id}, this.value)">
+                  <option value="Belum Bayar" selected>Belum Bayar</option>
+                  <option value="Sudah Bayar">Sudah Bayar</option>
+                </select>
+              </td>
+              <td>-</td>
+            </tr>
+          `;
+        });
       }
 
       function ubahStatus(id, value) {

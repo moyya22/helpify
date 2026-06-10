@@ -3,9 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Riwayat Pembayaran</title>
-
     <link rel="stylesheet" href="css/style.css" />
-
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -15,15 +13,10 @@
   <body>
     <div class="header">
       <h1>HELPIFY</h1>
-
       <div class="user-info" onclick="toggleDropdown()">
-        <div class="user-avatar">
-          <i class="fas fa-user"></i>
-        </div>
-
+        <div class="user-avatar"><i class="fas fa-user"></i></div>
         <span id="usernameDisplay"></span>
         <i class="fa-solid fa-chevron-down"></i>
-
         <div class="dropdown-menu" id="dropdownMenu">
           <div onclick="openChangePassword()">Ubah Password</div>
           <div onclick="logout()">Logout</div>
@@ -33,44 +26,69 @@
 
     <div class="sidebar">
       <div class="sidebar-title">Menu Utama</div>
-
       <ul>
         <li>
-          <a href="index.html">
-            <i class="fa-solid fa-chart-line"></i> Dashboard
-          </a>
+          <a href="index.html"
+            ><i class="fa-solid fa-chart-line"></i> Dashboard</a
+          >
         </li>
-
         <li>
-          <a href="input.html">
-            <i class="fa-solid fa-file-circle-plus"></i> Input Dokumen
-          </a>
+          <a href="input.html"
+            ><i class="fa-solid fa-file-circle-plus"></i> Input Dokumen</a
+          >
         </li>
-
         <li>
-          <a href="data.html">
-            <i class="fa-solid fa-database"></i> Data Dokumen
-          </a>
+          <a href="data.html"
+            ><i class="fa-solid fa-database"></i> Data Dokumen</a
+          >
         </li>
-
         <li>
-          <a href="riwayat.html" class="active">
-            <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pembayaran
-          </a>
+          <a href="riwayat.html" class="active"
+            ><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pembayaran</a
+          >
         </li>
-
         <li>
-          <a href="#">
-            <i class="fa-solid fa-right-from-bracket"></i> Logout
-          </a>
+          <a href="#" onclick="logout()"
+            ><i class="fa-solid fa-right-from-bracket"></i> Logout</a
+          >
         </li>
       </ul>
     </div>
 
     <div class="main">
       <div class="navbar">Riwayat Pembayaran</div>
-
       <div class="table-container">
+        <div
+          style="display: flex; justify-content: flex-end; margin-bottom: 10px"
+        >
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              background: #f1f3f6;
+              border: 1px solid #d3d3d3;
+              border-radius: 6px;
+              padding: 6px 12px;
+            "
+          >
+            <i class="fa-solid fa-magnifying-glass" style="color: #0f2573"></i>
+            <input
+              id="searchRiwayat"
+              type="text"
+              placeholder="Cari No SPPB atau Nama..."
+              oninput="filterRiwayat()"
+              style="
+                border: none;
+                background: transparent;
+                outline: none;
+                font-size: 14px;
+                width: 220px;
+                color: #333;
+              "
+            />
+          </div>
+        </div>
         <table>
           <thead>
             <tr>
@@ -81,10 +99,9 @@
               <th>Bukti</th>
             </tr>
           </thead>
-
           <tbody id="riwayatTable">
             <tr>
-              <td colspan="6" class="empty-data">
+              <td colspan="5" class="empty-data">
                 Belum ada riwayat pembayaran
               </td>
             </tr>
@@ -92,6 +109,7 @@
         </table>
       </div>
     </div>
+
     <script>
       let loginUser = localStorage.getItem("loginUser");
       if (!loginUser) window.location.href = "login.html";
@@ -116,28 +134,45 @@
         fetch("/api/pembayaran")
           .then((res) => res.json())
           .then((data) => {
-            let riwayat = data.filter((d) => d.status === "Sudah Bayar");
-            let tableBody = document.getElementById("riwayatTable");
-
-            if (riwayat.length === 0) {
-              tableBody.innerHTML = `<tr><td colspan="6">Belum ada riwayat pembayaran</td></tr>`;
-              return;
-            }
-
-            tableBody.innerHTML = "";
-            riwayat.forEach((d) => {
-              tableBody.innerHTML += `
-    <tr>
-      <td>${d.no_sppb}</td>
-      <td>${d.nama}</td>
-      <td>${Number(d.nominal).toLocaleString("id-ID")}</td>
-      <td>${d.tanggal_realisasi || "-"}</td>
-      <td>${d.bukti ? `<a href="${d.bukti}" target="_blank">Lihat</a>` : "-"}</td>
-    </tr>
-  `;
-            });
+            window.allRiwayat = data.filter((d) => d.status === "Sudah Bayar");
+            tampilkanRiwayat(window.allRiwayat);
           });
       });
+
+      function filterRiwayat() {
+        let keyword = document
+          .getElementById("searchRiwayat")
+          .value.toLowerCase()
+          .trim();
+        let filtered = (window.allRiwayat || []).filter(
+          (d) =>
+            (d.no_sppb || "").toLowerCase().includes(keyword) ||
+            (d.nama || "").toLowerCase().includes(keyword),
+        );
+        tampilkanRiwayat(filtered);
+      }
+
+      function tampilkanRiwayat(data) {
+        let tableBody = document.getElementById("riwayatTable");
+
+        if (data.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="5">Belum ada riwayat pembayaran</td></tr>`;
+          return;
+        }
+
+        tableBody.innerHTML = "";
+        data.forEach((d) => {
+          tableBody.innerHTML += `
+            <tr>
+              <td>${d.no_sppb}</td>
+              <td>${d.nama}</td>
+              <td>${Number(d.nominal).toLocaleString("id-ID")}</td>
+              <td>${d.tanggal_realisasi || "-"}</td>
+              <td>${d.bukti ? `<a href="${d.bukti}" target="_blank">Lihat</a>` : "-"}</td>
+            </tr>
+          `;
+        });
+      }
     </script>
   </body>
 </html>
