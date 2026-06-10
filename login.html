@@ -1,0 +1,162 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <style>
+      body.login-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: var(--bg);
+      }
+
+      .login-box {
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        border: 2px solid var(--secondary);
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      .login-box h2 {
+        color: var(--primary);
+        margin-bottom: 24px;
+        text-align: center;
+        font-size: 24px;
+      }
+
+      .login-box input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--secondary);
+        border-radius: 5px;
+        font-size: 14px;
+        margin-bottom: 14px;
+      }
+
+      .input-wrapper {
+        position: relative;
+        margin-bottom: 14px;
+      }
+
+      .input-wrapper input {
+        margin-bottom: 0;
+        padding-right: 40px;
+      }
+
+      .input-wrapper i {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: gray;
+      }
+
+      .login-box .btn {
+        width: 100%;
+        margin-top: 6px;
+      }
+
+      .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #555;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+
+  <body class="login-page">
+    <div class="login-box">
+      <h2>HELPIFY</h2>
+
+      <input
+        id="username"
+        placeholder="Username"
+        onkeydown="
+          if (event.key === 'Enter')
+            document.getElementById('password').focus();
+        "
+      />
+
+      <div class="input-wrapper">
+        <input id="password" type="password" placeholder="Password" />
+        <i
+          class="fa-solid fa-eye"
+          id="togglePass"
+          onclick="togglePassword()"
+        ></i>
+      </div>
+
+      <label class="remember-me">
+        <input type="checkbox" id="rememberMe" />
+        Simpan password
+      </label>
+
+      <button class="btn" onclick="login()">Login</button>
+    </div>
+
+    <script>
+      if (localStorage.getItem("loginUser")) {
+        window.location.href = "index.html";
+      }
+
+      // Isi otomatis kalau ada saved password
+      let savedUsername = localStorage.getItem("savedUsername");
+      let savedPassword = localStorage.getItem("savedPassword");
+      if (savedUsername && savedPassword) {
+        document.getElementById("username").value = savedUsername;
+        document.getElementById("password").value = savedPassword;
+        document.getElementById("rememberMe").checked = true;
+      }
+
+      function togglePassword() {
+        let passInput = document.getElementById("password");
+        let icon = document.getElementById("togglePass");
+        if (passInput.type === "password") {
+          passInput.type = "text";
+          icon.classList.replace("fa-eye", "fa-eye-slash");
+        } else {
+          passInput.type = "password";
+          icon.classList.replace("fa-eye-slash", "fa-eye");
+        }
+      }
+
+      function login() {
+        let user = document.getElementById("username").value.trim();
+        let pass = document.getElementById("password").value.trim();
+        let remember = document.getElementById("rememberMe").checked;
+
+        let savedPass = localStorage.getItem("loginPass") || "admin";
+
+        if (user === "admin" && pass === savedPass) {
+          localStorage.setItem("loginUser", user);
+
+          if (remember) {
+            localStorage.setItem("savedUsername", user);
+            localStorage.setItem("savedPassword", pass);
+          } else {
+            localStorage.removeItem("savedUsername");
+            localStorage.removeItem("savedPassword");
+          }
+
+          window.location.href = "index.html";
+        } else {
+          alert("Username atau Password salah!");
+        }
+      }
+    </script>
+  </body>
+</html>

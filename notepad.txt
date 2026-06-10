@@ -1,0 +1,751 @@
+- Login
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login Helpify</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins', sans-serif;
+}
+
+body{
+    background:#d3d3d3;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.login-box{
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    width:350px;
+    box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+
+.login-box h2{
+    text-align:center;
+    margin-bottom:20px;
+    color:#0f2573;
+}
+
+.form-group{
+    margin-bottom:15px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:5px;
+}
+
+.form-group input{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+button{
+    width:100%;
+    padding:10px;
+    background:#0f2573;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#091a4d;
+}
+
+.footer{
+    text-align:center;
+    margin-top:10px;
+    font-size:12px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="login-box">
+
+<h2>Login Helpify</h2>
+
+<div class="form-group">
+<label>Username</label>
+<input type="text" id="username" placeholder="Masukkan username">
+</div>
+
+<div class="form-group">
+<label>Password</label>
+<input type="password" id="password" placeholder="Masukkan password">
+</div>
+
+<button onclick="login()">Login</button>
+
+<div class="footer">
+Helpify System © 2025
+</div>
+
+</div>
+
+<script>
+
+function login(){
+
+let user = document.getElementById("username").value;
+let pass = document.getElementById("password").value;
+
+if(user == "admin" && pass == "admin"){
+    alert("Login Berhasil!");
+    window.location.href = "index.html";
+}
+else{
+    alert("Username atau Password salah!");
+}
+
+}
+
+</script>
+
+</body>
+</html>
+
+- Dashboard (Indeks.html)
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dashboard</title>
+
+    <link rel="stylesheet" href="css/style.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <div class="header">
+      <h1>HELPIFY</h1>
+
+      <div class="user-info">
+        <div class="user-avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <span>Admin</span>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-title">Menu Utama</div>
+
+      <ul>
+        <li>
+          <a href="index.html" class="active">
+            <i class="fa-solid fa-chart-line"></i>
+            Dashboard
+          </a>
+        </li>
+
+        <li>
+          <a href="input.html">
+            <i class="fa-solid fa-file-circle-plus"></i>
+            Input Dokumen
+          </a>
+        </li>
+
+        <li>
+          <a href="data.html">
+            <i class="fa-solid fa-database"></i>
+            Data Dokumen
+          </a>
+        </li>
+
+        <li>
+          <a href="riwayat.html">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            Riwayat Pembayaran
+          </a>
+        </li>
+
+        <li>
+          <a href="#">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="main">
+      <div class="navbar">Dashboard Prioritas Pembayaran</div>
+
+      <div class="cards">
+        <div class="card">
+          <h3>Total Dokumen</h3>
+          <p>0</p>
+        </div>
+
+        <div class="card">
+          <h3>Rencana Bayar Hari Ini</h3>
+          <p>0</p>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <h3>Prioritas Pembayaran</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>No SPPB</th>
+              <th>Nama</th>
+              <th>Jenis</th>
+              <th>Nilai SAW</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td colspan="6" class="empty-data">
+                Belum ada data dokumen. Silakan input dokumen terlebih dahulu.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <a href="input.html">
+          <button class="btn">Input Dokumen</button>
+        </a>
+      </div>
+    </div>
+  </body>
+</html>
+
+- CSS
+:root {
+  --primary: #0f2573;
+  --secondary: #d3d3d3;
+  --bg: #f1f3f6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  display: flex;
+  background: var(--bg);
+}
+
+/* HEADER */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  background: white;
+  border-bottom: 2px solid var(--secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 30px;
+  z-index: 1000;
+}
+
+.header h1 {
+  color: var(--primary);
+}
+
+/* USER INFO */
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--primary);
+}
+
+.user-avatar {
+  width: 35px;
+  height: 35px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  width: 220px;
+  height: calc(100vh - 70px);
+  background: white;
+  padding: 20px 10px;
+  border-right: 3px solid var(--primary);
+}
+
+.sidebar-title {
+  color: var(--primary);
+  margin-bottom: 20px;
+  font-weight: 600;
+  font-size: 15px;
+  padding-left: 12px;
+}
+
+.sidebar ul li {
+  list-style: none;
+  margin-bottom: 8px;
+}
+
+.sidebar ul li a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+  transition: 0.3s;
+  font-size: 14px;
+}
+
+/* ICON SERAGAM */
+.sidebar ul li a i {
+  width: 20px;
+  text-align: center;
+  font-size: 16px;
+}
+
+/* HOVER */
+.sidebar ul li a:hover,
+.sidebar ul li a.active {
+  background: var(--primary);
+  color: white;
+}
+
+/* MAIN */
+
+.main {
+  flex: 1;
+  padding: 25px;
+  margin-top: 70px;
+  margin-left: 220px;
+}
+
+.navbar {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--primary);
+}
+
+/* CARDS */
+
+.cards {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  flex: 1;
+  border-radius: 10px;
+  border: 2px solid var(--secondary);
+}
+
+/* TABLE */
+
+.table-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid var(--secondary);
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  white-space: nowrap;
+}
+
+th,
+td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid var(--secondary);
+}
+
+th {
+  background: var(--primary);
+  color: white;
+}
+
+.empty-data {
+  color: gray;
+  font-style: italic;
+}
+
+/* FORM */
+
+.form-container {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  border: 2px solid var(--secondary);
+  width: 100%;
+  max-width: 1100px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+form input,
+form select {
+  padding: 10px;
+  border: 1px solid var(--secondary);
+  border-radius: 5px;
+}
+
+.btn {
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+- Input Dokumen (input.html)
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Input Dokumen</title>
+
+    <link rel="stylesheet" href="css/style.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <!-- HEADER -->
+    <div class="header">
+      <h1>HELPIFY</h1>
+
+      <div class="user-info">
+        <span>Admin</span>
+        <div class="user-avatar">A</div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-title">Menu Utama</div>
+
+      <ul>
+        <li>
+          <a href="index.html">
+            <i class="fa-solid fa-chart-line"></i>
+            Dashboard
+          </a>
+        </li>
+
+        <li>
+          <a href="input.html" class="active">
+            <i class="fa-solid fa-file-circle-plus"></i>
+            Input Dokumen
+          </a>
+        </li>
+
+        <li>
+          <a href="data.html">
+            <i class="fa-solid fa-database"></i>
+            Data Dokumen
+          </a>
+        </li>
+
+        <li>
+          <a href="riwayat.html">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            Riwayat Pembayaran
+          </a>
+        </li>
+
+        <li>
+          <a href="#">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="navbar">Input Dokumen</div>
+
+      <div class="form-container">
+        <form>
+          <label>Tanggal Terima Dokumen</label>
+          <input type="date" required />
+
+          <label>No SPP</label>
+          <input type="text" placeholder="Masukkan No SPP" required />
+
+          <label>Kode CC</label>
+          <input type="number" placeholder="Masukkan Kode CC" required />
+
+          <label>Kode Ref</label>
+          <input type="number" placeholder="Masukkan Kode Reff" required />
+
+          <label>Nama Vendor/Pegawai</label>
+          <input type="text" placeholder="Nama Vendor/Pegawai" required />
+
+          <label>Jenis Dokumen</label>
+          <select required>
+            <option value="">Pilih Jenis Dokumen</option>
+            <option>Invoice</option>
+            <option>Faktur Pajak</option>
+            <option>SPPB</option>
+          </select>
+
+          <label>Nominal Pembayaran</label>
+          <input
+            type="number"
+            placeholder="Masukkan Nominal yang Harus Dibayarkan"
+            required
+          />
+
+          <label>Tanggal Rencana Bayar</label>
+          <input type="date" required />
+
+          <button type="submit" class="btn">Simpan</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
+
+- Data Dokumen (data.html)
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Data Dokumen</title>
+
+    <link rel="stylesheet" href="css/style.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <div class="header">
+      <h1>HELPIFY</h1>
+
+      <div class="user-info">
+        <div class="user-avatar">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <span>Admin</span>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-title">Menu Utama</div>
+
+      <ul>
+        <li>
+          <a href="index.html">
+            <i class="fa-solid fa-chart-line"></i> Dashboard
+          </a>
+        </li>
+
+        <li>
+          <a href="input.html">
+            <i class="fa-solid fa-file-circle-plus"></i> Input Dokumen
+          </a>
+        </li>
+
+        <li>
+          <a href="data.html" class="active">
+            <i class="fa-solid fa-database"></i> Data Dokumen
+          </a>
+        </li>
+
+        <li>
+          <a href="riwayat.html">
+            <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pembayaran
+          </a>
+        </li>
+
+        <li>
+          <a href="#">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="main">
+      <div class="navbar">Data Dokumen Pembayaran</div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>No SPPB</th>
+              <th>Nama</th>
+              <th>Jenis</th>
+              <th>Nominal</th>
+              <th>Status</th>
+              <th>Bukti</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td colspan="6" class="empty-data">Belum ada data dokumen</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
+
+- Riwayat Pembayaran (riwayat.html)
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Riwayat Pembayaran</title>
+
+    <link rel="stylesheet" href="css/style.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <div class="header">
+      <h1>HELPIFY</h1>
+
+      <div class="user-info">
+        <div class="user-avatar">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <span>Admin</span>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-title">Menu Utama</div>
+
+      <ul>
+        <li>
+          <a href="index.html">
+            <i class="fa-solid fa-chart-line"></i> Dashboard
+          </a>
+        </li>
+
+        <li>
+          <a href="input.html">
+            <i class="fa-solid fa-file-circle-plus"></i> Input Dokumen
+          </a>
+        </li>
+
+        <li>
+          <a href="data.html">
+            <i class="fa-solid fa-database"></i> Data Dokumen
+          </a>
+        </li>
+
+        <li>
+          <a href="riwayat.html" class="active">
+            <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pembayaran
+          </a>
+        </li>
+
+        <li>
+          <a href="#">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="main">
+      <div class="navbar">Riwayat Pembayaran</div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>No SPPB</th>
+              <th>Nama</th>
+              <th>Jenis</th>
+              <th>Nominal</th>
+              <th>Tanggal Bayar</th>
+              <th>Bukti</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td colspan="6" class="empty-data">
+                Belum ada riwayat pembayaran
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
+
+- Logout

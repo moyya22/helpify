@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Riwayat Pembayaran</title>
+
+    <link rel="stylesheet" href="css/style.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <div class="header">
+      <h1>HELPIFY</h1>
+
+      <div class="user-info" onclick="toggleDropdown()">
+        <div class="user-avatar">
+          <i class="fas fa-user"></i>
+        </div>
+
+        <span id="usernameDisplay"></span>
+        <i class="fa-solid fa-chevron-down"></i>
+
+        <div class="dropdown-menu" id="dropdownMenu">
+          <div onclick="openChangePassword()">Ubah Password</div>
+          <div onclick="logout()">Logout</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-title">Menu Utama</div>
+
+      <ul>
+        <li>
+          <a href="index.html">
+            <i class="fa-solid fa-chart-line"></i> Dashboard
+          </a>
+        </li>
+
+        <li>
+          <a href="input.html">
+            <i class="fa-solid fa-file-circle-plus"></i> Input Dokumen
+          </a>
+        </li>
+
+        <li>
+          <a href="data.html">
+            <i class="fa-solid fa-database"></i> Data Dokumen
+          </a>
+        </li>
+
+        <li>
+          <a href="riwayat.html" class="active">
+            <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pembayaran
+          </a>
+        </li>
+
+        <li>
+          <a href="#">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="main">
+      <div class="navbar">Riwayat Pembayaran</div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>No SPPB</th>
+              <th>Nama</th>
+              <th>Jenis</th>
+              <th>Nominal</th>
+              <th>Tanggal Bayar</th>
+              <th>Bukti</th>
+            </tr>
+          </thead>
+
+          <tbody id="riwayatTable">
+            <tr>
+              <td colspan="6" class="empty-data">
+                Belum ada riwayat pembayaran
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <script>
+      let loginUser = localStorage.getItem("loginUser");
+
+      if (!loginUser) {
+        window.location.href = "login.html";
+      }
+
+      document.getElementById("usernameDisplay").innerText = loginUser;
+
+      function toggleDropdown() {
+        document.getElementById("dropdownMenu").classList.toggle("show");
+      }
+
+      window.onclick = function (e) {
+        if (!e.target.closest(".user-info")) {
+          document.getElementById("dropdownMenu").classList.remove("show");
+        }
+      };
+
+      function logout() {
+        localStorage.removeItem("loginUser");
+        window.location.href = "login.html";
+      }
+
+      function openChangePassword() {
+        document.getElementById("passwordModal").style.display = "flex";
+      }
+
+      function closeModal() {
+        document.getElementById("passwordModal").style.display = "none";
+      }
+
+      function changePassword() {
+        let oldPass = document.getElementById("oldPass").value;
+        let newPass = document.getElementById("newPass").value;
+
+        let savedPass = localStorage.getItem("loginPass") || "admin";
+
+        if (oldPass === savedPass) {
+          localStorage.setItem("loginPass", newPass);
+          alert("Password berhasil diubah!");
+          closeModal();
+        } else {
+          alert("Password lama salah!");
+        }
+      }
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        let data = JSON.parse(localStorage.getItem("dokumen")) || [];
+
+        // 🔥 FILTER HANYA YANG SUDAH BAYAR
+        let riwayat = data.filter((d) => d.status === "Sudah Bayar");
+
+        let tableBody = document.getElementById("riwayatTable");
+
+        if (riwayat.length === 0) {
+          tableBody.innerHTML = `
+      <tr>
+        <td colspan="6">Belum ada riwayat pembayaran</td>
+      </tr>`;
+          return;
+        }
+
+        tableBody.innerHTML = "";
+
+        riwayat.forEach((d) => {
+          tableBody.innerHTML += `
+      <tr>
+        <td>${d.spp}</td>
+        <td>${d.nama}</td>
+        <td>${d.jenis}</td>
+        <td>${d.nominal}</td>
+        <td>${new Date().toLocaleDateString()}</td>
+        <td>
+          ${d.bukti ? `<a href="${d.bukti}" target="_blank">Lihat</a>` : "-"}
+        </td>
+      </tr>
+    `;
+        });
+      });
+    </script>
+  </body>
+</html>

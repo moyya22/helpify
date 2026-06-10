@@ -1,0 +1,272 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <div class="header">
+      <h1>HELPIFY</h1>
+      <div class="user-info" onclick="toggleDropdown()">
+        <div class="user-avatar"><i class="fas fa-user"></i></div>
+        <span id="usernameDisplay"></span>
+        <i class="fa-solid fa-chevron-down"></i>
+        <div class="dropdown-menu" id="dropdownMenu">
+          <div onclick="openChangePassword()">
+            <i class="fa-solid fa-lock"></i> Ubah Password
+          </div>
+          <div onclick="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-title">Menu Utama</div>
+      <ul>
+        <li>
+          <a href="index.html" class="active"
+            ><i class="fa-solid fa-chart-line"></i> Dashboard</a
+          >
+        </li>
+        <li>
+          <a href="input.html"
+            ><i class="fa-solid fa-file-circle-plus"></i> Input Dokumen</a
+          >
+        </li>
+        <li>
+          <a href="data.html"
+            ><i class="fa-solid fa-database"></i> Data Dokumen</a
+          >
+        </li>
+        <li>
+          <a href="riwayat.html"
+            ><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pembayaran</a
+          >
+        </li>
+        <li>
+          <a href="#" onclick="logout()"
+            ><i class="fa-solid fa-right-from-bracket"></i> Logout</a
+          >
+        </li>
+      </ul>
+    </div>
+
+    <div class="main">
+      <div class="navbar">Dashboard Prioritas Pembayaran</div>
+
+      <div class="cards">
+        <div class="card">
+          <h3>Total Dokumen</h3>
+          <p id="totalDokumen">0</p>
+        </div>
+        <div class="card">
+          <h3>Rencana Bayar Hari Ini</h3>
+          <p id="rencanaBayar">0</p>
+        </div>
+        <div class="card" style="border-color: #e74c3c">
+          <h3 style="color: #e74c3c">Melewati Tanggal Rencana</h3>
+          <p id="terlambat" style="color: #e74c3c">0</p>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+          "
+        >
+          <h3 style="margin: 0">Prioritas Pembayaran</h3>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              background: #f1f3f6;
+              border: 1px solid #d3d3d3;
+              border-radius: 6px;
+              padding: 6px 12px;
+            "
+          >
+            <i class="fa-solid fa-magnifying-glass" style="color: #0f2573"></i>
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Cari Dokumen yang Belum Dibayar"
+              oninput="filterTable()"
+              style="
+                border: none;
+                background: transparent;
+                outline: none;
+                font-size: 14px;
+                width: 240px;
+                color: #333;
+              "
+            />
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>No SPPB</th>
+              <th>Nama</th>
+              <th>Jenis</th>
+              <th>Nominal</th>
+              <th>Tgl Terima</th>
+              <th>Tgl Rencana Bayar</th>
+              <th>Kode CC</th>
+              <th>Kode Ref</th>
+              <th>Nilai SAW</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="dashboardTable">
+            <tr>
+              <td colspan="11" class="empty-data">
+                Belum ada data dokumen. Silakan input dokumen terlebih dahulu.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <a href="input.html"><button class="btn">Input Dokumen</button></a>
+      </div>
+    </div>
+
+    <div class="modal" id="passwordModal">
+      <div class="modal-content">
+        <h3>Ubah Password</h3>
+        <input id="oldPass" type="password" placeholder="Password Lama" />
+        <input id="newPass" type="password" placeholder="Password Baru" />
+        <button class="btn" onclick="changePassword()">Simpan</button>
+        <button class="btn" style="background: gray" onclick="closeModal()">
+          Batal
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let loginUser = localStorage.getItem("loginUser");
+      if (!loginUser) window.location.href = "login.html";
+
+      document.getElementById("usernameDisplay").innerText = loginUser;
+
+      function toggleDropdown() {
+        document.getElementById("dropdownMenu").classList.toggle("show");
+      }
+
+      window.onclick = function (e) {
+        if (!e.target.closest(".user-info")) {
+          document.getElementById("dropdownMenu").classList.remove("show");
+        }
+      };
+
+      function logout() {
+        localStorage.removeItem("loginUser");
+        window.location.href = "login.html";
+      }
+
+      function openChangePassword() {
+        document.getElementById("passwordModal").style.display = "flex";
+      }
+
+      function closeModal() {
+        document.getElementById("passwordModal").style.display = "none";
+      }
+
+      function changePassword() {
+        let oldPass = document.getElementById("oldPass").value;
+        let newPass = document.getElementById("newPass").value;
+        let savedPass = localStorage.getItem("loginPass") || "admin";
+        if (oldPass === savedPass) {
+          localStorage.setItem("loginPass", newPass);
+          alert("Password berhasil diubah!");
+          closeModal();
+        } else {
+          alert("Password lama salah!");
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        let data = JSON.parse(localStorage.getItem("dokumen")) || [];
+
+        let today = new Date().toISOString().split("T")[0];
+
+        // Total semua dokumen
+        document.getElementById("totalDokumen").innerText = data.length;
+
+        // Rencana bayar hari ini (belum bayar)
+        let todayCount = data.filter(
+          (d) => d.rencana === today && d.status !== "Sudah Bayar",
+        ).length;
+        document.getElementById("rencanaBayar").innerText = todayCount;
+
+        // Melewati tanggal rencana (belum bayar & tanggal rencana < hari ini)
+        let terlambat = data.filter(
+          (d) => d.rencana < today && d.status !== "Sudah Bayar",
+        ).length;
+        document.getElementById("terlambat").innerText = terlambat;
+
+        renderDashboardTable(data);
+      });
+
+      function renderDashboardTable(data) {
+        let tableBody = document.getElementById("dashboardTable");
+        let filtered = data.filter((d) => d.status !== "Sudah Bayar");
+
+        if (filtered.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="11" class="empty-data">Tidak ada data yang cocok</td></tr>`;
+          return;
+        }
+        tableBody.innerHTML = "";
+        filtered.forEach((d, index) => {
+          tableBody.innerHTML += `
+            <tr>
+              <td>${index + 1}</td>
+              <td>${d.spp}</td>
+              <td>${d.nama}</td>
+              <td>${d.jenis}</td>
+              <td>${d.nominal}</td>
+              <td>${d.tanggal}</td>
+              <td>${d.rencana}</td>
+              <td>${d.cc}</td>
+              <td>${d.ref}</td>
+              <td>-</td>
+              <td>${d.status}</td>
+            </tr>
+          `;
+        });
+      }
+
+      function filterTable() {
+        let keyword = document
+          .getElementById("searchInput")
+          .value.toLowerCase()
+          .trim();
+        let allData = JSON.parse(localStorage.getItem("dokumen")) || [];
+        let filtered = allData.filter(
+          (d) =>
+            d.status !== "Sudah Bayar" &&
+            (d.spp.toLowerCase().includes(keyword) ||
+              d.nama.toLowerCase().includes(keyword) ||
+              d.jenis.toLowerCase().includes(keyword)),
+        );
+        renderDashboardTable(filtered);
+      }
+    </script>
+  </body>
+</html>
