@@ -10,8 +10,8 @@ dotenv.config();
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.static(__dirname));
 
 const db = mysql.createConnection({
@@ -28,7 +28,6 @@ db.connect((err) => {
     console.error(err);
     return;
   }
-
   console.log("Database berhasil terkoneksi!");
 
   const createTable = `
@@ -37,8 +36,8 @@ db.connect((err) => {
       tanggal_terima VARCHAR(20),
       no_sppb VARCHAR(100) UNIQUE,
       kode_cc VARCHAR(50),
-      kode_ref VARCHAR(50),
       nama VARCHAR(200),
+      uraian TEXT,
       jenis_dokumen VARCHAR(100),
       nominal BIGINT,
       tanggal_rencana VARCHAR(20),
@@ -51,44 +50,37 @@ db.connect((err) => {
   `;
 
   db.query(createTable, (err) => {
-    if (err) {
-      console.error("Gagal buat tabel:", err);
-    } else {
-      console.log("Tabel pembayaran siap!");
-    }
+    if (err) console.error("Gagal buat tabel:", err);
+    else console.log("Tabel pembayaran siap!");
   });
 });
 
 // GET semua pembayaran
 app.get("/api/pembayaran", (req, res) => {
   db.query("SELECT * FROM pembayaran ORDER BY id DESC", (err, results) => {
-    if (err) {
-      console.error(err);
+    if (err)
       return res.status(500).json({ success: false, error: err.message });
-    }
     return res.json(results);
   });
 });
 
 // POST input manual
 app.post("/api/pembayaran", (req, res) => {
-  const { tanggal, spp, cc, ref, nama, jenis, nominal, rencana } = req.body;
+  const { tanggal, spp, cc, nama, uraian, jenis, nominal, rencana } = req.body;
 
   const sql = `
-    INSERT INTO pembayaran (tanggal_terima, no_sppb, kode_cc, kode_ref, nama, jenis_dokumen, nominal, tanggal_rencana, status)
+    INSERT INTO pembayaran (tanggal_terima, no_sppb, kode_cc, nama, uraian, jenis_dokumen, nominal, tanggal_rencana, status)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Belum Bayar')
   `;
 
   db.query(
     sql,
-    [tanggal, spp, cc, ref, nama, jenis, nominal, rencana],
+    [tanggal, spp, cc, nama, uraian || "", jenis, nominal, rencana],
     (err, result) => {
-      if (err) {
-        console.error(err);
+      if (err)
         return res
           .status(500)
           .json({ success: false, message: "Gagal menyimpan data" });
-      }
       return res.json({
         success: true,
         message: "Data berhasil disimpan",
@@ -100,40 +92,47 @@ app.post("/api/pembayaran", (req, res) => {
 
 // POST upload Excel
 app.post("/api/upload-excel", upload.single("file"), (req, res) => {
-  if (!req.file) {
+  if (!req.file)
     return res
       .status(400)
       .json({ success: false, message: "File tidak ditemukan" });
-  }
 
   try {
     const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet);
 
-    let berhasil = 0;
-    let duplikat = 0;
-    let gagal = 0;
+    let berhasil = 0,
+      duplikat = 0,
+      gagal = 0;
 
     const promises = rows.map((row) => {
       return new Promise((resolve) => {
-        // Mapping kolom Excel ke database
-        const tanggal = row["Tanggal Terima"] || row["tanggal_terima"] || "";
-        const spp = row["No SPPb"] || row["no_sppb"] || "";
-        const cc = row["Kode CC"] || row["kode_cc"] || "";
-        const ref = row["Kode Ref"] || row["kode_ref"] || "";
-        const nama = row["Nama Vendor"] || row["nama"] || "";
-        const jenis =
+        const tanggal = row["Tanggal Terima"] || "";
+        const spp = String(row["No SPPb"] || row["no_sppb"] || "").trim();
+        const cc = String(row["Kode CC"] || row["kode_cc"] || "").trim();
+        const nama = String(row["Nama Vendor"] || row["nama"] || "").trim();
+        const uraian = String(row["Uraian"] || row["uraian"] || "").trim();
+        const jenis = String(
           row["Uraian"] ||
-          row["jenis_dokumen"] ||
-          "Pembayaran Vendor Non Urgent";
-        const nominal = parseInt(row["Jumlah Hutang"] || row["nominal"] || 0);
+            row["jenis_dokumen"] ||
+            "Pembayaran Vendor Non Urgent",
+        ).trim();
+        const nominal =
+          Math.round(
+            parseFloat(
+              String(row["Jumlah Hutang"] || row["nominal"] || "0").replace(
+                /[^0-9.-]/g,
+                "",
+              ),
+            ),
+          ) || 0;
         const rencana =
           row["Tgl Rencana Bayar"] || row["tanggal_rencana"] || "";
         const realisasi =
           row["Tgl Realisasi Bayar"] || row["tanggal_realisasi"] || "";
         const status = realisasi ? "Sudah Bayar" : "Belum Bayar";
-        const sumber = row["Sumber"] || row["sumber"] || "";
+        const sumber = String(row["Sumber"] || row["sumber"] || "").trim();
 
         if (!spp) {
           gagal++;
@@ -141,9 +140,14 @@ app.post("/api/upload-excel", upload.single("file"), (req, res) => {
         }
 
         const sql = `
-          INSERT INTO pembayaran (tanggal_terima, no_sppb, kode_cc, kode_ref, nama, jenis_dokumen, nominal, tanggal_rencana, tanggal_realisasi, status, sumber)
+          INSERT INTO pembayaran (tanggal_terima, no_sppb, kode_cc, nama, uraian, jenis_dokumen, nominal, tanggal_rencana, tanggal_realisasi, status, sumber)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          ON DUPLICATE KEY UPDATE id=id
+          ON DUPLICATE KEY UPDATE
+            nominal = VALUES(nominal),
+            uraian = VALUES(uraian),
+            tanggal_rencana = VALUES(tanggal_rencana),
+            tanggal_realisasi = VALUES(tanggal_realisasi),
+            status = VALUES(status)
         `;
 
         db.query(
@@ -152,8 +156,8 @@ app.post("/api/upload-excel", upload.single("file"), (req, res) => {
             tanggal,
             spp,
             cc,
-            ref,
             nama,
+            uraian,
             jenis,
             nominal,
             rencana,
@@ -185,7 +189,6 @@ app.post("/api/upload-excel", upload.single("file"), (req, res) => {
       });
     });
   } catch (err) {
-    console.error(err);
     res
       .status(500)
       .json({ success: false, message: "Gagal membaca file Excel" });
@@ -195,17 +198,17 @@ app.post("/api/upload-excel", upload.single("file"), (req, res) => {
 // PATCH update status
 app.patch("/api/pembayaran/:id", (req, res) => {
   const { status, tanggal_realisasi, bukti } = req.body;
-  const sql = `UPDATE pembayaran SET status=?, tanggal_realisasi=?, bukti=? WHERE id=?`;
-
-  db.query(sql, [status, tanggal_realisasi, bukti, req.params.id], (err) => {
-    if (err) {
-      console.error(err);
-      return res
-        .status(500)
-        .json({ success: false, message: "Gagal update status" });
-    }
-    return res.json({ success: true, message: "Status berhasil diupdate" });
-  });
+  db.query(
+    "UPDATE pembayaran SET status=?, tanggal_realisasi=?, bukti=? WHERE id=?",
+    [status, tanggal_realisasi, bukti, req.params.id],
+    (err) => {
+      if (err)
+        return res
+          .status(500)
+          .json({ success: false, message: "Gagal update status" });
+      return res.json({ success: true, message: "Status berhasil diupdate" });
+    },
+  );
 });
 
 app.get("/", (req, res) => {
@@ -213,6 +216,4 @@ app.get("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server berjalan di port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server berjalan di port ${PORT}`));

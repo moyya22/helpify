@@ -74,9 +74,6 @@
           <label>Kode CC</label>
           <input id="cc" type="text" placeholder="Masukkan No CC" required />
 
-          <label>Kode Ref</label>
-          <input id="ref" type="text" placeholder="Masukkan Kode Ref" />
-
           <label>Nama Vendor/Karyawan</label>
           <input
             id="nama"
@@ -84,6 +81,12 @@
             placeholder="Masukkan Nama Vendor/Karyawan"
             required
           />
+
+          <label
+            >Uraian
+            <span style="color: gray; font-size: 12px">(opsional)</span></label
+          >
+          <input id="uraian" type="text" placeholder="Masukkan Uraian" />
 
           <label>Jenis Dokumen</label>
           <select id="jenis" required>
@@ -160,8 +163,8 @@
           tanggal: document.getElementById("tanggal").value,
           spp: document.getElementById("spp").value,
           cc: document.getElementById("cc").value,
-          ref: document.getElementById("ref").value,
           nama: document.getElementById("nama").value,
+          uraian: document.getElementById("uraian").value,
           jenis: document.getElementById("jenis").value,
           nominal: document.getElementById("nominal").value,
           rencana: document.getElementById("rencana").value,
