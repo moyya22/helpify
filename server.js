@@ -56,11 +56,102 @@ db.connect((err) => {
 });
 
 // GET semua pembayaran
+// Fungsi hitung skor SAW
+function hitungSAW(data) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const W = {
+    c1: 3 / 19,
+    c2: 4 / 19,
+    c3: 5 / 19,
+    c4: 4 / 19,
+    c5: 3 / 19,
+  };
+
+  return data.map((d) => {
+    // C1 — Kedekatan Tenggat (tanggal_rencana ke hari ini)
+    let c1 = 1;
+    if (d.tanggal_rencana) {
+      const rencana = new Date(d.tanggal_rencana);
+      rencana.setHours(0, 0, 0, 0);
+      const selisih = Math.ceil((rencana - today) / (1000 * 60 * 60 * 24));
+      if (selisih < 4) c1 = 5;
+      else if (selisih <= 7) c1 = 4;
+      else if (selisih <= 14) c1 = 3;
+      else if (selisih <= 30) c1 = 2;
+      else c1 = 1;
+    }
+
+    // C2 — Jenis Pembayaran
+    const jenis = (d.jenis_dokumen || "").trim();
+    let c2 = 3;
+    if (jenis === "Gaji Karyawan Lepas" || jenis === "Gaji Karyawan Tetap")
+      c2 = 5;
+    else if (jenis === "Pembayaran Vendor Urgent") c2 = 4;
+    else if (
+      jenis === "Pembayaran Mingguan" ||
+      jenis === "Pembayaran Vendor Non Urgent"
+    )
+      c2 = 3;
+
+    // C3 — Urgensi Operasional
+    let c3 = 2;
+    if (jenis === "Gaji Karyawan Lepas" || jenis === "Gaji Karyawan Tetap")
+      c3 = 5;
+    else if (jenis === "Pembayaran Vendor Urgent") c3 = 4;
+    else if (jenis === "Pembayaran Mingguan") c3 = 4;
+    else if (jenis === "Pembayaran Vendor Non Urgent") c3 = 2;
+
+    // C4 — Umur Tunggu (tanggal_terima ke hari ini)
+    let c4 = 1;
+    if (d.tanggal_terima) {
+      const terima = new Date(d.tanggal_terima);
+      terima.setHours(0, 0, 0, 0);
+      const umur = Math.ceil((today - terima) / (1000 * 60 * 60 * 24));
+      if (umur < 6) c4 = 1;
+      else if (umur <= 10) c4 = 2;
+      else if (umur <= 20) c4 = 3;
+      else if (umur <= 30) c4 = 4;
+      else c4 = 5;
+    }
+
+    // C5 — Nominal
+    const nominal = Number(d.nominal) || 0;
+    let c5 = 1;
+    if (nominal <= 5000000) c5 = 1;
+    else if (nominal <= 15000000) c5 = 2;
+    else if (nominal <= 50000000) c5 = 3;
+    else if (nominal <= 500000000) c5 = 4;
+    else c5 = 5;
+
+    // Normalisasi SAW (benefit semua, bagi nilai max = 5)
+    const r1 = c1 / 5;
+    const r2 = c2 / 5;
+    const r3 = c3 / 5;
+    const r4 = c4 / 5;
+    const r5 = c5 / 5;
+
+    const saw = W.c1 * r1 + W.c2 * r2 + W.c3 * r3 + W.c4 * r4 + W.c5 * r5;
+
+    return { ...d, saw_score: parseFloat(saw.toFixed(4)) };
+  });
+}
+
+// GET semua pembayaran
 app.get("/api/pembayaran", (req, res) => {
   db.query("SELECT * FROM pembayaran ORDER BY id DESC", (err, results) => {
     if (err)
       return res.status(500).json({ success: false, error: err.message });
-    return res.json(results);
+
+    const belumBayar = results.filter((d) => d.status !== "Sudah Bayar");
+    const sudahBayar = results.filter((d) => d.status === "Sudah Bayar");
+
+    const denganSAW = hitungSAW(belumBayar).sort(
+      (a, b) => b.saw_score - a.saw_score,
+    );
+
+    return res.json([...denganSAW, ...sudahBayar]);
   });
 });
 
