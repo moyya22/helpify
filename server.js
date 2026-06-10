@@ -27,6 +27,34 @@ db.connect((err) => {
   }
 
   console.log("Database berhasil terkoneksi!");
+
+  // Auto buat tabel kalau belum ada
+  const createTable = `
+    CREATE TABLE IF NOT EXISTS pembayaran (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      tanggal_terima VARCHAR(20),
+      no_sppb VARCHAR(100) UNIQUE,
+      kode_cc VARCHAR(50),
+      kode_ref VARCHAR(50),
+      nama VARCHAR(200),
+      jenis_dokumen VARCHAR(100),
+      nominal BIGINT,
+      tanggal_rencana VARCHAR(20),
+      tanggal_realisasi VARCHAR(20),
+      status VARCHAR(20) DEFAULT 'Belum Bayar',
+      bukti LONGTEXT,
+      sumber VARCHAR(50),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  db.query(createTable, (err) => {
+    if (err) {
+      console.error("Gagal buat tabel:", err);
+    } else {
+      console.log("Tabel pembayaran siap!");
+    }
+  });
 });
 
 app.post("/api/pembayaran", (req, res) => {
