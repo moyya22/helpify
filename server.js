@@ -108,30 +108,38 @@ app.post("/api/upload-excel", upload.single("file"), (req, res) => {
 
     const promises = rows.map((row) => {
       return new Promise((resolve) => {
-        const tanggal = row["Tanggal Terima"] || "";
-        const spp = String(row["No SPPb"] || row["no_sppb"] || "").trim();
+        const tanggal = row["Tanggal Terima"] || row["tanggal_terima"] || "";
+        const spp = String(
+          row["No SPPb"] || row["No SPPB"] || row["no_sppb"] || "",
+        ).trim();
         const cc = String(row["Kode CC"] || row["kode_cc"] || "").trim();
-        const nama = String(row["Nama Vendor"] || row["nama"] || "").trim();
+        const nama = String(
+          row["Nama Vendor"] || row["Nama"] || row["nama"] || "",
+        ).trim();
         const uraian = String(row["Uraian"] || row["uraian"] || "").trim();
         const jenis = String(
-          row["Uraian"] ||
+          row["Jenis Dokumen"] ||
             row["jenis_dokumen"] ||
             "Pembayaran Vendor Non Urgent",
         ).trim();
+        const rawNominal =
+          row["Nominal"] ??
+          row["Jumlah Hutang"] ??
+          row["nominal"] ??
+          row["jumlah_hutang"] ??
+          0;
         const nominal =
-          Math.round(
-            parseFloat(
-              String(row["Jumlah Hutang"] || row["nominal"] || "0").replace(
-                /[^0-9.-]/g,
-                "",
-              ),
-            ),
-          ) || 0;
+          typeof rawNominal === "number"
+            ? Math.round(rawNominal)
+            : Math.round(
+                parseFloat(String(rawNominal).replace(/[^0-9.-]/g, "")) || 0,
+              );
         const rencana =
           row["Tgl Rencana Bayar"] || row["tanggal_rencana"] || "";
         const realisasi =
           row["Tgl Realisasi Bayar"] || row["tanggal_realisasi"] || "";
-        const status = realisasi ? "Sudah Bayar" : "Belum Bayar";
+        const status =
+          row["Status"] || (realisasi ? "Sudah Bayar" : "Belum Bayar");
         const sumber = String(row["Sumber"] || row["sumber"] || "").trim();
 
         if (!spp) {
