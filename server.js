@@ -14,45 +14,43 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.static(__dirname));
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000,
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error("Koneksi database gagal!");
-    console.error(err);
-    return;
-  }
-  console.log("Database berhasil terkoneksi!");
+console.log("Database pool siap!");
 
-  const createTable = `
-    CREATE TABLE IF NOT EXISTS pembayaran (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      tanggal_terima VARCHAR(20),
-      no_sppb VARCHAR(100) UNIQUE,
-      kode_cc VARCHAR(50),
-      nama VARCHAR(200),
-      uraian TEXT,
-      jenis_dokumen VARCHAR(100),
-      nominal BIGINT,
-      tanggal_rencana VARCHAR(20),
-      tanggal_realisasi VARCHAR(20),
-      status VARCHAR(20) DEFAULT 'Belum Bayar',
-      bukti LONGTEXT,
-      sumber VARCHAR(50),
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `;
+const createTable = `
+  CREATE TABLE IF NOT EXISTS pembayaran (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tanggal_terima VARCHAR(20),
+    no_sppb VARCHAR(100) UNIQUE,
+    kode_cc VARCHAR(50),
+    nama VARCHAR(200),
+    uraian TEXT,
+    jenis_dokumen VARCHAR(100),
+    nominal BIGINT,
+    tanggal_rencana VARCHAR(20),
+    tanggal_realisasi VARCHAR(20),
+    status VARCHAR(20) DEFAULT 'Belum Bayar',
+    bukti LONGTEXT,
+    sumber VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+`;
 
-  db.query(createTable, (err) => {
-    if (err) console.error("Gagal buat tabel:", err);
-    else console.log("Tabel pembayaran siap!");
-  });
+db.query(createTable, (err) => {
+  if (err) console.error("Gagal buat tabel:", err);
+  else console.log("Tabel pembayaran siap!");
 });
 
 function hitungSAW(data) {
