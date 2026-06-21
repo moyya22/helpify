@@ -134,7 +134,18 @@
         fetch("/api/pembayaran", { cache: "no-store" })
           .then((res) => res.json())
           .then((data) => {
-            window.allRiwayat = data.filter((d) => d.status === "Sudah Bayar");
+            window.allRiwayat = data
+              .filter((d) => d.status === "Sudah Bayar")
+              .sort((a, b) => {
+                const parseTgl = (str) => {
+                  if (!str) return 0;
+                  const [day, month, year] = str.split("/");
+                  return new Date(year, month - 1, day).getTime();
+                };
+                return (
+                  parseTgl(b.tanggal_realisasi) - parseTgl(a.tanggal_realisasi)
+                );
+              });
             tampilkanRiwayat(window.allRiwayat);
           });
       });
@@ -150,6 +161,22 @@
             (d.nama || "").toLowerCase().includes(keyword),
         );
         tampilkanRiwayat(filtered);
+      }
+
+      function lihatBukti(id) {
+        const item = (window.allRiwayat || []).find((d) => d.id === id);
+        if (!item || !item.bukti) return;
+
+        const base64 = item.bukti.split(",")[1];
+        const byteChars = atob(base64);
+        const byteNumbers = new Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) {
+          byteNumbers[i] = byteChars.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, "_blank");
       }
 
       function tampilkanRiwayat(data) {
@@ -168,7 +195,7 @@
               <td>${d.nama}</td>
               <td>${Number(d.nominal).toLocaleString("id-ID")}</td>
               <td>${d.tanggal_realisasi || "-"}</td>
-              <td>${d.bukti ? `<a href="${d.bukti}" target="_blank">Lihat</a>` : "-"}</td>
+              <td>${d.bukti ? `<button onclick="lihatBukti(${d.id})" style="cursor:pointer;border:none;background:none;color:#0f2573;text-decoration:underline;">Lihat</button>` : "-"}</td>
             </tr>
           `;
         });
