@@ -131,7 +131,7 @@
       }
 
       document.addEventListener("DOMContentLoaded", function () {
-        fetch("/api/pembayaran")
+        fetch("/api/pembayaran", { cache: "no-store" })
           .then((res) => res.json())
           .then((data) => {
             window.allRiwayat = data.filter((d) => d.status === "Sudah Bayar");
