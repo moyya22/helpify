@@ -139,8 +139,16 @@
               .sort((a, b) => {
                 const parseTgl = (str) => {
                   if (!str) return 0;
-                  const [day, month, year] = str.split("/");
-                  return new Date(year, month - 1, day).getTime();
+                  if (str.includes("-")) {
+                    // format YYYY-MM-DD (dari Excel)
+                    return new Date(str).getTime();
+                  }
+                  if (str.includes("/")) {
+                    // format D/M/YYYY (dari update manual)
+                    const [day, month, year] = str.split("/");
+                    return new Date(year, month - 1, day).getTime();
+                  }
+                  return 0;
                 };
                 return (
                   parseTgl(b.tanggal_realisasi) - parseTgl(a.tanggal_realisasi)
